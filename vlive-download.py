@@ -10,6 +10,8 @@ from pysrt.srtitem import SubRipItem
 from pysrt.srttime import SubRipTime
 import time
 
+default_title = "temp"
+
 # urls to download. Should eventually be able to be decided by cli option
 urls = ['https://www.vlive.tv/video/116623']
 
@@ -18,12 +20,6 @@ input_path = Path('./vlive-input/')
 
 # where the final, subtitled product is tranferred.
 output_path = Path('./vlive-output/')
-
-# Seems like english subtitles are always 'en_US', and they always come in vtt files
-ydl_opts = {
-    'writesubtitles': 'en_US',
-    'outtmpl': str(input_path / 'temp.%(ext)s'),
-}
 
 # converts a VTT file to an SRT file, which handbrake likes working in.
 # stolen from vtt-to-srt (https://github.com/lbrayner/vtt-to-srt/blob/master/vtt-to-srt)
@@ -50,14 +46,14 @@ def convert_sub(vtt_file):
 
 
 # burns the captions into the video
-def burn_in():
-    args = ['-i ' + '"' + str((input_path / 'temp.mp4').resolve()) + '"',
-            '-o ' + '"' + str((output_path / 'output.mp4').resolve()) + '"',
+def burn_in(title = default_title):
+    args = ['-i ' + '"' + str((input_path / (title + '.mp4')).resolve()) + '"',
+            '-o ' + '"' + str((output_path / (title + '.mp4')).resolve()) + '"',
             '--optimize',
             '--encoder x264',
             '--x264-preset medium',
             '--srt-file ' + '"' +
-            str((input_path / 'temp.en_US.srt').resolve()) + '"',
+            str((input_path / (title + '.en_US.srt')).resolve()) + '"',
             '--srt-burn']
 
     params = ''
@@ -70,25 +66,43 @@ def burn_in():
 
 #
 # remove the temp files in the input folder
-def cleanup():
-    pass
+# Deletes all VTTs, SRTs, and MP4s
+def cleanup(title = default_title):
+    # ALWAYS completely clean up input
+    for file in os.listdir(input_path):
+        if file.endsWith(".srt") or \
+            file.endswith(".vtt") or \
+                file.endswith("mp4"):
+
+            os.remove(input_path / file)
+    
+    # TODO: MAYBE implement something that intelligently rinses the output directory. 
+    # Will donly do when there's nothing else to do.
+
 
 
 # Completely process a video from start to end
 # Downloads, burns in subtitles, and cleans up.
-def process_video(url):
+def process_video(url, title = default_title):
     # give user info
     print("Starting to rip " + url)
     start_time = time.time()
 
     # download the video
+    
+    # Seems like english subtitles are always 'en_US', and they always come in vtt files
+    ydl_opts = {
+        'writesubtitles': 'en_US',
+        'outtmpl': str(input_path / (title + '.%(ext)s')),
+    }
+
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         ydl.download(url)
     download_time = time.time()
     print("Downloading the video took " + str(download_time - start_time))
 
     # covert the subtitles to srt (which handbrake likes working in)
-    convert_sub(str(input_path / 'temp.en_US.vtt'))
+    convert_sub(str(input_path / (title + '.en_US.vtt')))
     convert_sub_time = time.time()
     print("Converting the subtitles took " +
           str(convert_sub_time - download_time))
