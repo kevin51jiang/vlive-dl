@@ -13,7 +13,9 @@ import time
 default_title = "temp"
 
 # urls to download. Should eventually be able to be decided by cli option
-urls = ['https://www.vlive.tv/video/116623']
+urls = ['https://www.vlive.tv/video/116971',
+        'https://www.vlive.tv/video/117375']
+titles = ['twiceStarRoadEp05', 'twiceStarRoadEp06']
 
 # where the stuff is intially downloaded. Treated like a temp folder.
 input_path = Path('./vlive-input/')
@@ -46,9 +48,10 @@ def convert_sub(vtt_file):
 
 
 # burns the captions into the video
-def burn_in(title = default_title):
+def burn_in(title=default_title):
     args = ['-i ' + '"' + str((input_path / (title + '.mp4')).resolve()) + '"',
-            '-o ' + '"' + str((output_path / (title + '.mp4')).resolve()) + '"',
+            '-o ' + '"' +
+            str((output_path / (title + '.mp4')).resolve()) + '"',
             '--optimize',
             '--encoder x264',
             '--x264-preset medium',
@@ -67,29 +70,30 @@ def burn_in(title = default_title):
 #
 # remove the temp files in the input folder
 # Deletes all VTTs, SRTs, and MP4s
-def cleanup(title = default_title):
+def cleanup(title=default_title):
     # ALWAYS completely clean up input
-    for file in os.listdir(input_path):
-        if file.endsWith(".srt") or \
-            file.endswith(".vtt") or \
-                file.endswith("mp4"):
+    for file_name in os.listdir(input_path.resolve()):
+        print("found file: " + file_name)
+        if file_name.endswith(".srt") or \
+            file_name.endswith(".vtt") or \
+                file_name.endswith("mp4"):
 
-            os.remove(input_path / file)
-    
-    # TODO: MAYBE implement something that intelligently rinses the output directory. 
+            os.remove(input_path / file_name)
+            print("removing: " + file_name)
+
+    # TODO: MAYBE implement something that intelligently rinses the output directory.
     # Will donly do when there's nothing else to do.
-
 
 
 # Completely process a video from start to end
 # Downloads, burns in subtitles, and cleans up.
-def process_video(url, title = default_title):
+def process_video(url, title=default_title):
     # give user info
-    print("Starting to rip " + url)
+    print("Starting to rip " + url[0])
     start_time = time.time()
 
     # download the video
-    
+
     # Seems like english subtitles are always 'en_US', and they always come in vtt files
     ydl_opts = {
         'writesubtitles': 'en_US',
@@ -108,7 +112,7 @@ def process_video(url, title = default_title):
           str(convert_sub_time - download_time))
 
     # Burn in (Hardcode) in subtitles to the video.
-    burn_in()
+    burn_in(title=title)
     burn_in_time = time.time()
     print("Buring in the subtitles took " +
           str(burn_in_time - convert_sub_time))
@@ -124,8 +128,10 @@ def process_video(url, title = default_title):
 
 # THE STORY BEGINS
 def __main__():
-    for request in urls:
-        process_video(request)
+    for i in range(0, len(urls)):
+        temp_list = ['']
+        temp_list[0] = urls[i]
+        process_video(temp_list, title=titles[i])
 
 
 __main__()
