@@ -13,9 +13,18 @@ import time
 default_title = "temp"
 
 # urls to download. Should eventually be able to be decided by cli option
-urls = ['https://www.vlive.tv/video/116971',
-        'https://www.vlive.tv/video/117375']
-titles = ['twiceStarRoadEp05', 'twiceStarRoadEp06']
+urls = ['https://www.vlive.tv/video/102729',
+        'https://www.vlive.tv/video/103139',
+		'https://www.vlive.tv/video/103163',
+		'https://www.vlive.tv/video/103167',
+		'https://www.vlive.tv/video/97465',
+		'https://www.vlive.tv/video/97467']
+titles = ['bpStarRoadEp01', 
+		'bpStarRoadEp02',
+		'bpStarRoadEp03',
+		'bpStarRoadEp04',
+		'bpStarRoadEp05',
+		'bpStarRoadEp06']
 
 # where the stuff is intially downloaded. Treated like a temp folder.
 input_path = Path('./vlive-input/')
