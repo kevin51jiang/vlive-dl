@@ -1,0 +1,4 @@
+youtube-dl
+html2text
+pysrt
+webvtt-py
